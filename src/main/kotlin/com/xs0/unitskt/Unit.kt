@@ -92,14 +92,14 @@ class LinearUnit(val multiplier: Rational, encoded: String, prettySymbols: Strin
     private val asComposite = CompositeUnit(mapOf(this to 1), multiplier, encoded, prettySymbols, kind)
 
     override fun div(other: Unit): Unit {
-        if (other == COUNT) return this
+        if (other == NO_UNIT) return this
 
         return toComposite() / other
     }
 
     override fun times(other: Unit): Unit {
-        if (this == COUNT) return other
-        if (other == COUNT) return this
+        if (this == NO_UNIT) return other
+        if (other == NO_UNIT) return this
 
         return toComposite() * other
     }

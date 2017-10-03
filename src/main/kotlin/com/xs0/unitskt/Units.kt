@@ -1,7 +1,7 @@
 package com.xs0.unitskt
 
-val COUNT = LinearUnit(Rational.ONE, "", "", UnitKind.COUNT)
-val PERCENT = LinearUnit(Rational.of(1, 100), "%", "%", UnitKind.COUNT)
+val NO_UNIT = LinearUnit(Rational.ONE, "", "", UnitKind.NUMBER)
+val PERCENT = LinearUnit(Rational.of(1, 100), "%", "%", UnitKind.NUMBER)
 
 val METER = LinearUnit(Rational.ONE, "m", "m", UnitKind.LENGTH)
 val SECOND = LinearUnit(Rational.ONE, "s", "s", UnitKind.TIME)

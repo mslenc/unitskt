@@ -46,7 +46,7 @@ class UnitKind(val weightExp: Int = 0, val timeExp: Int = 0, val lengthExp: Int 
 
 
     companion object {
-        val COUNT = UnitKind()
+        val NUMBER = UnitKind()
 
         val WEIGHT = UnitKind(weightExp = 1)
         val TIME = UnitKind(timeExp = 1)
@@ -54,7 +54,7 @@ class UnitKind(val weightExp: Int = 0, val timeExp: Int = 0, val lengthExp: Int 
         val TEMPERATURE = UnitKind(tempExp = 1)
 
         val SPEED = LENGTH / TIME
-        val FREQUENCY = COUNT / TIME
+        val FREQUENCY = NUMBER / TIME
         val ACCELERATION = SPEED / TIME
     }
 }

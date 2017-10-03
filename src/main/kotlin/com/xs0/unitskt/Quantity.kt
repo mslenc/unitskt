@@ -8,6 +8,9 @@ private fun chooseBigger(a: Unit, b: Unit): Unit {
     }
 }
 
+fun Double.of(unit: Unit) = Quantity(this, unit)
+
+
 class Quantity(val value: Double, val unit: Unit, val isInterval: Boolean = false) {
     fun convertTo(newUnit: Unit): Quantity {
         if (unit == newUnit)
@@ -175,6 +178,41 @@ class Quantity(val value: Double, val unit: Unit, val isInterval: Boolean = fals
         }
     }
 
+    operator fun times(other: Quantity): Quantity {
+        val left = if (unit is CustomUnit) {
+            unit.toLinear(value, isInterval)
+        } else {
+            this
+        }
+
+        val right = if (other.unit is CustomUnit) {
+            other.unit.toLinear(other.value, other.isInterval)
+        } else {
+            other
+        }
+
+        return Quantity(left.value * right.value, left.unit * right.unit, isInterval && other.isInterval)
+    }
+
+    operator fun div(other: Quantity): Quantity {
+        if (Math.abs(other.value) < 1E-30)
+            throw IllegalArgumentException("Division by zero")
+
+        val left = if (unit is CustomUnit) {
+            unit.toLinear(value, isInterval)
+        } else {
+            this
+        }
+
+        val right = if (other.unit is CustomUnit) {
+            other.unit.toLinear(other.value, other.isInterval)
+        } else {
+            other
+        }
+
+        return Quantity(left.value / right.value, left.unit / right.unit, isInterval && other.isInterval)
+    }
+
     override fun equals(other: Any?): Boolean {
         return when {
             this === other -> true
@@ -188,7 +226,7 @@ class Quantity(val value: Double, val unit: Unit, val isInterval: Boolean = fals
     }
 
     override fun toString(): String {
-        if (unit == COUNT) {
+        if (unit == NO_UNIT) {
             return value.toString()
         } else {
             return "$value ${unit.prettySymbols}"

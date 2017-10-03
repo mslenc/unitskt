@@ -42,6 +42,20 @@ class UnitsTest {
         assertEquals(Quantity(3.141, KILOMETER, true), Quantity(4.0, KILOMETER) - Quantity(859.0, METER))
     }
 
+    @Test
+    fun testTimes() {
+        assertEquals(35.0.of(METER * METER), 5.0.of(METER) * 7.0.of(METER))
+        assertEquals(68.0.of(METER), 4.0.of(NO_UNIT) * 17.0.of(METER))
+        assertEquals(68.0.of(METER), 4.0.of(METER) * 17.0.of(NO_UNIT))
+    }
+
+    @Test
+    fun testDiv() {
+        assertEquals(5.0.of(METER), 35.0.of(METER * METER) / 7.0.of(METER))
+        assertEquals(68.0.of(NO_UNIT / METER), 1156.0.of(NO_UNIT) / 17.0.of(METER))
+        assertEquals(68.0.of(METER), 1156.0.of(METER) / 17.0.of(NO_UNIT))
+    }
+
     @Suppress("NOTHING_TO_INLINE")
     inline fun assertEquals(a: Quantity, b: Quantity) {
         assertEquals(a.isInterval, b.isInterval)
@@ -143,7 +157,8 @@ class UnitsTest {
 
     @Test
     fun testUnitFormatting() {
-        assertEquals("m", (COUNT * METER).toString())
+        assertEquals("m", (NO_UNIT * METER).toString())
+        assertEquals("m", (METER * NO_UNIT).toString())
         assertEquals("%", PERCENT.toString())
         assertEquals("m/s", (METER / SECOND).toString())
         assertEquals("kg m/s²", (KILOGRAM * METER / SECOND / SECOND).toString())
