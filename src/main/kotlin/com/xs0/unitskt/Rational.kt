@@ -18,20 +18,20 @@ class Rational private constructor(val mul: BigInteger, val div: BigInteger) {
     operator fun plus(other: Rational): Rational {
         return when {
             div == other.div ->
-                Rational(mul + other.mul, div)
+                Rational.of(mul + other.mul, div)
 
             else ->
-                Rational(mul * other.div + other.mul * div, mul * other.mul)
+                Rational.of(mul * other.div + other.mul * div, div * other.div)
         }
     }
 
     operator fun minus(other: Rational): Rational {
         return when {
             div == other.div ->
-                Rational(mul - other.mul, div)
+                Rational.of(mul - other.mul, div)
 
             else ->
-                Rational(mul * other.div - other.mul * div, mul * other.mul)
+                Rational.of(mul * other.div - other.mul * div, div * other.div)
         }
     }
 
@@ -108,5 +108,11 @@ class Rational private constructor(val mul: BigInteger, val div: BigInteger) {
                 }
             }
         }
+    }
+
+    operator fun compareTo(other: Rational): Int {
+        // a/b  <=>  c/d
+        // ad   <=>  cb
+        return (mul * other.div).compareTo(other.mul * div)
     }
 }

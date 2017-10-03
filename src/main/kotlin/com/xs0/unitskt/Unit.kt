@@ -78,6 +78,10 @@ sealed class Unit(val encoded: String, val prettySymbols: String, val kind: Unit
 
         return true
     }
+
+    override fun toString(): String {
+        return prettySymbols
+    }
 }
 
 sealed class NamedUnit(encoded: String, prettySymbols: String, kind: UnitKind) : Unit(encoded, prettySymbols, kind) {
@@ -88,10 +92,15 @@ class LinearUnit(val multiplier: Rational, encoded: String, prettySymbols: Strin
     private val asComposite = CompositeUnit(mapOf(this to 1), multiplier, encoded, prettySymbols, kind)
 
     override fun div(other: Unit): Unit {
+        if (other == COUNT) return this
+
         return toComposite() / other
     }
 
     override fun times(other: Unit): Unit {
+        if (this == COUNT) return other
+        if (other == COUNT) return this
+
         return toComposite() * other
     }
 
@@ -121,12 +130,12 @@ private fun encodeUnits(parts: Map<NamedUnit, Int>): String {
     return sb.toString()
 }
 
-private fun superscripts(value: Int): String {
+fun Int.toSuperscriptString(): String {
     val expChars = "⁰¹²³⁴⁵⁶⁷⁸⁹"
-    if (value in 0..9)
-        return expChars[value].toString()
+    if (this in 0..9)
+        return expChars[this].toString()
 
-    val sb = StringBuilder(value.toString())
+    val sb = StringBuilder(this.toString())
     for (i in 0 until sb.length) {
         if (sb[i] == '-') {
             sb[i] = '⁻'
@@ -153,7 +162,7 @@ private fun prettyPrintUnits(parts: Map<NamedUnit, Int>): String {
             sb.append(unit.prettySymbols)
 
             if (exp != 1)
-                sb.append(superscripts(exp))
+                sb.append(exp.toSuperscriptString())
         }
     }
 
@@ -171,7 +180,7 @@ private fun prettyPrintUnits(parts: Map<NamedUnit, Int>): String {
             sb.append(unit.prettySymbols)
 
             if (exp != -1)
-                sb.append(superscripts(-exp))
+                sb.append((-exp).toSuperscriptString())
         }
     }
 
@@ -212,7 +221,13 @@ class CompositeUnit(val parts: Map<NamedUnit, Int>, val multiplier: Rational, en
 
             is CompositeUnit -> {
                 val newParts = parts.toMutableMap()
-                newParts.mergeAll(other.parts) { a, b -> if (a == b) null else a - b }
+                for ((unit, exp) in other.parts) {
+                    if (unit in newParts) {
+                        newParts[unit] = newParts[unit]!! - exp
+                    } else {
+                        newParts[unit] = -exp
+                    }
+                }
 
                 val newMultiplier = multiplier / other.multiplier
                 val newEncoded = encodeUnits(newParts)
@@ -230,32 +245,28 @@ class CompositeUnit(val parts: Map<NamedUnit, Int>, val multiplier: Rational, en
 }
 
 sealed class CustomUnit(encoded: String, prettySymbols: String, kind: UnitKind): NamedUnit(encoded, prettySymbols, kind) {
-    abstract fun toLinearQuantity(quantity: Double): Quantity
+    abstract fun toLinear(quantity: Double, isInterval: Boolean): Quantity
     abstract fun fromLinear(quantity: Quantity): Quantity
-
-    abstract fun toLinearInterval(interval: Double): Interval
-    abstract fun fromLinear(interval: Interval): Interval
 }
 
 object DegCelsius : CustomUnit("degC", "°C", UnitKind.TEMPERATURE) {
     private val asComposite = CompositeUnit(mapOf(this to 1), Rational.ONE, encoded, prettySymbols, kind)
 
-    override fun toLinearQuantity(quantity: Double): Quantity {
-        return Quantity(quantity + 273.15, KELVIN)
+    override fun toLinear(quantity: Double, isInterval: Boolean): Quantity {
+        return if (isInterval) {
+            Quantity(quantity, KELVIN, isInterval)
+        } else {
+            Quantity(quantity + 273.15, KELVIN, isInterval)
+        }
     }
 
     override fun fromLinear(quantity: Quantity): Quantity {
         val kelvins = quantity.convertTo(KELVIN)
-        return Quantity(kelvins.value - 273.15, this)
-    }
-
-    override fun toLinearInterval(interval: Double): Interval {
-        return Interval(interval, KELVIN)
-    }
-
-    override fun fromLinear(interval: Interval): Interval {
-        val kelvins = interval.convertTo(KELVIN)
-        return Interval(kelvins.difference, this)
+        return if (quantity.isInterval) {
+            Quantity(kelvins.value, this, isInterval = true)
+        } else {
+            Quantity(kelvins.value - 273.15, this, isInterval = false)
+        }
     }
 
     override fun toComposite(): CompositeUnit {
@@ -274,22 +285,21 @@ object DegCelsius : CustomUnit("degC", "°C", UnitKind.TEMPERATURE) {
 object DegFahrenheit : CustomUnit("degF", "°F", UnitKind.TEMPERATURE) {
     private val asComposite = CompositeUnit(mapOf(this to 1), Rational.of(5, 9), encoded, prettySymbols, kind)
 
-    override fun toLinearQuantity(quantity: Double): Quantity {
-        return Quantity((quantity + 459.67) * 5 / 9, KELVIN)
+    override fun toLinear(quantity: Double, isInterval: Boolean): Quantity {
+        if (isInterval) {
+            return Quantity(quantity * 5 / 9, KELVIN, isInterval = true)
+        } else {
+            return Quantity((quantity + 459.67) * 5 / 9, KELVIN, isInterval = false)
+        }
     }
 
     override fun fromLinear(quantity: Quantity): Quantity {
         val kelvins = quantity.convertTo(KELVIN)
-        return Quantity(kelvins.value * 9 / 5 - 459.67, this)
-    }
-
-    override fun toLinearInterval(interval: Double): Interval {
-        return Interval(interval * 5 / 9, KELVIN)
-    }
-
-    override fun fromLinear(interval: Interval): Interval {
-        val kelvins = interval.convertTo(KELVIN)
-        return Interval(kelvins.difference * 9 / 5, this)
+        return if (quantity.isInterval) {
+            Quantity(kelvins.value * 9 / 5, this, isInterval = true)
+        } else {
+            Quantity(kelvins.value * 9 / 5 - 459.67, this, isInterval = false)
+        }
     }
 
     override fun toComposite(): CompositeUnit {
