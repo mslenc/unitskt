@@ -89,7 +89,15 @@ sealed class NamedUnit(encoded: String, prettySymbols: String, kind: UnitKind) :
 }
 
 class LinearUnit(val multiplier: Rational, encoded: String, prettySymbols: String, kind: UnitKind): NamedUnit(encoded, prettySymbols, kind) {
-    private val asComposite = CompositeUnit(mapOf(this to 1), multiplier, encoded, prettySymbols, kind)
+    private val asComposite: CompositeUnit
+    init {
+        asComposite =
+            if (multiplier == Rational.ONE && kind == UnitKind.NUMBER) {
+                CompositeUnit(emptyMap(), Rational.ONE, encoded, prettySymbols, UnitKind.NUMBER)
+            } else {
+                CompositeUnit(mapOf(this to 1), multiplier, encoded, prettySymbols, kind)
+            }
+    }
 
     override fun div(other: Unit): Unit {
         if (other == NO_UNIT) return this

@@ -127,6 +127,7 @@ object Units {
 }
 
 val NO_UNIT = Units.add(LinearUnit(Rational.ONE, "", "", UnitKind.NUMBER))
+val COUNT = NO_UNIT
 val PERCENT = Units.add(LinearUnit(Rational.of(1, 100), "%", "%", UnitKind.NUMBER))
 
 val METER = Units.add(LinearUnit(Rational.ONE, "m", "m", UnitKind.LENGTH))
@@ -154,3 +155,4 @@ val DEG_CELSIUS = Units.add(DegCelsius)
 val DEG_FAHRENHEIT = Units.add(DegFahrenheit)
 
 val METER_PER_SECOND = METER / SECOND
+val KM_PER_HOUR = KILOMETER / HOUR
