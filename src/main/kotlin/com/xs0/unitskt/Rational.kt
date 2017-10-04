@@ -115,4 +115,14 @@ class Rational private constructor(val mul: BigInteger, val div: BigInteger) {
         // ad   <=>  cb
         return (mul * other.div).compareTo(other.mul * div)
     }
+
+    fun toPower(exp: Int): Rational {
+        return when {
+            exp == 1 -> this
+            exp == -1 -> Rational(div, mul)
+            exp > 0 -> Rational(mul.pow(exp), div.pow(exp))
+            exp < 0 -> Rational(div.pow(-exp), mul.pow(-exp))
+            else -> ONE
+        }
+    }
 }

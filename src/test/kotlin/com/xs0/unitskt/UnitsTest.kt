@@ -163,4 +163,11 @@ class UnitsTest {
         assertEquals("m/s", (METER / SECOND).toString())
         assertEquals("kg m/s²", (KILOGRAM * METER / SECOND / SECOND).toString())
     }
+
+    @Test
+    fun testPercentage() {
+        val result = Quantity(275.0, CENTIMETER) / Quantity(2.5, METER) - Quantity(1.0, NO_UNIT)
+
+        assertEquals(Quantity(10.0, PERCENT, true), result.convertTo(PERCENT))
+    }
 }

@@ -2,9 +2,9 @@ package com.xs0.unitskt
 
 // Unit = just base interface
 //     NamedUnit = Unit which has its own (simple) symbol
-//         LinearUnit = NamedUnit which has a multiplier and some form of UnitKind (e.g. N = kg m s^-1)
-//         CustomUnit = NamedUnit which is not linearly converted to base units (e.g. degC)
-//     CompositeUnit = multiplier + exponents of NamedUnits (e.g. m/s^2)
+//         LinearUnit = NamedUnit which has a multiplier and some form of UnitKind (e.g. N = 1 * kg m s⁻²)
+//         CustomUnit = NamedUnit which is not linearly converted to base units (e.g. °C)
+//     CompositeUnit = multiplier + exponents of NamedUnits (e.g. m/s²)
 // note: the multiplier always relates to base SI units, not the named unit
 
 
@@ -85,7 +85,7 @@ sealed class Unit(val encoded: String, val prettySymbols: String, val kind: Unit
 }
 
 sealed class NamedUnit(encoded: String, prettySymbols: String, kind: UnitKind) : Unit(encoded, prettySymbols, kind) {
-
+    abstract fun toPower(exp: Int): Unit
 }
 
 class LinearUnit(val multiplier: Rational, encoded: String, prettySymbols: String, kind: UnitKind): NamedUnit(encoded, prettySymbols, kind) {
@@ -106,6 +106,13 @@ class LinearUnit(val multiplier: Rational, encoded: String, prettySymbols: Strin
 
     override fun toComposite(): CompositeUnit {
         return asComposite
+    }
+
+    override fun toPower(exp: Int): Unit {
+        if (exp == 1)
+            return asComposite
+
+        return CompositeUnit(mapOf(this to exp), multiplier.toPower(exp), "$encoded^$exp", formatPower(prettySymbols, exp), kind.toPower(exp))
     }
 }
 
@@ -144,6 +151,15 @@ fun Int.toSuperscriptString(): String {
         }
     }
     return sb.toString()
+}
+
+fun formatPower(prettySymbol: String, exp: Int): String {
+    return when {
+        exp == 1 -> prettySymbol
+        exp == -1 -> "/" + prettySymbol
+        exp > 0 -> prettySymbol + exp.toSuperscriptString()
+        else -> "/" + prettySymbol + (-exp).toSuperscriptString()
+    }
 }
 
 private fun prettyPrintUnits(parts: Map<NamedUnit, Int>): String {
@@ -280,6 +296,13 @@ object DegCelsius : CustomUnit("degC", "°C", UnitKind.TEMPERATURE) {
     override fun times(other: Unit): Unit {
         return toComposite() * other
     }
+
+    override fun toPower(exp: Int): Unit {
+        if (exp == 1)
+            return asComposite
+
+        return CompositeUnit(mapOf(this to exp), Rational.ONE, "$encoded^$exp", formatPower(prettySymbols, exp), kind.toPower(exp))
+    }
 }
 
 object DegFahrenheit : CustomUnit("degF", "°F", UnitKind.TEMPERATURE) {
@@ -312,5 +335,12 @@ object DegFahrenheit : CustomUnit("degF", "°F", UnitKind.TEMPERATURE) {
 
     override fun times(other: Unit): Unit {
         return toComposite() * other
+    }
+
+    override fun toPower(exp: Int): Unit {
+        if (exp == 1)
+            return asComposite
+
+        return CompositeUnit(mapOf(this to exp), asComposite.multiplier.toPower(exp), "$encoded^$exp", formatPower(prettySymbols, exp), kind.toPower(exp))
     }
 }

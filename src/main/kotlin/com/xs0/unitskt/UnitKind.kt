@@ -57,4 +57,13 @@ class UnitKind(val weightExp: Int = 0, val timeExp: Int = 0, val lengthExp: Int 
         val FREQUENCY = NUMBER / TIME
         val ACCELERATION = SPEED / TIME
     }
+
+    fun toPower(exp: Int): UnitKind {
+        return UnitKind(
+                weightExp = weightExp * exp,
+                timeExp   = timeExp   * exp,
+                lengthExp = lengthExp * exp,
+                tempExp   = tempExp   * exp
+        )
+    }
 }
