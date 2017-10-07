@@ -19,7 +19,7 @@ object Units {
         return unit
     }
 
-    fun parse(units: String): Unit {
+    fun parse(units: String): PhysUnit {
         // so we support something like
         // units := part* "/"? part*       (in other words, there can be 0 or 1 slashes, everything else must be parts)
         // part := name exponent?          (a missing exponent is equal to 1)
@@ -42,23 +42,23 @@ object Units {
         }
     }
 
-    fun allNamed(): List<Unit> {
+    fun allNamed(): List<PhysUnit> {
         return allNamed
     }
 
-    private fun parseHalf(units: String): Unit {
+    private fun parseHalf(units: String): PhysUnit {
         val trimmed = units.trim()
         if (trimmed.isEmpty())
             return NO_UNIT
 
         val parts = trimmed.split("\\s+".toRegex())
-        var result: Unit = NO_UNIT
+        var result: PhysUnit = NO_UNIT
         for (part in parts)
             result *= parsePart(part)
         return result
     }
 
-    private fun parsePart(part: String): Unit {
+    private fun parsePart(part: String): PhysUnit {
         val unit: String
         val exp: String
 

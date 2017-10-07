@@ -1,6 +1,6 @@
 package com.xs0.unitskt
 
-// Unit = just base interface
+// PhysUnit = just base interface
 //     NamedUnit = Unit which has its own (simple) symbol
 //         LinearUnit = NamedUnit which has a multiplier and some form of UnitKind (e.g. N = 1 * kg m s⁻²)
 //         CustomUnit = NamedUnit which is not linearly converted to base units (e.g. °C)
@@ -8,9 +8,9 @@ package com.xs0.unitskt
 // note: the multiplier always relates to base SI units, not the named unit
 
 
-sealed class Unit(val encoded: String, val prettySymbols: String, val kind: UnitKind) {
-    abstract operator fun div(other: Unit): Unit
-    abstract operator fun times(other: Unit): Unit
+sealed class PhysUnit(val encoded: String, val prettySymbols: String, val kind: UnitKind) {
+    abstract operator fun div(other: PhysUnit): PhysUnit
+    abstract operator fun times(other: PhysUnit): PhysUnit
     abstract fun toComposite(): CompositeUnit
 
     private val hash: Int by lazy {
@@ -54,7 +54,7 @@ sealed class Unit(val encoded: String, val prettySymbols: String, val kind: Unit
         return equals(other)
     }
 
-    fun equals(other: Unit): Boolean {
+    fun equals(other: PhysUnit): Boolean {
         if (this === other)
             return true
 
@@ -84,8 +84,8 @@ sealed class Unit(val encoded: String, val prettySymbols: String, val kind: Unit
     }
 }
 
-sealed class NamedUnit(encoded: String, prettySymbols: String, kind: UnitKind) : Unit(encoded, prettySymbols, kind) {
-    abstract fun toPower(exp: Int): Unit
+sealed class NamedUnit(encoded: String, prettySymbols: String, kind: UnitKind) : PhysUnit(encoded, prettySymbols, kind) {
+    abstract fun toPower(exp: Int): PhysUnit
 }
 
 class LinearUnit(val multiplier: Rational, encoded: String, prettySymbols: String, kind: UnitKind): NamedUnit(encoded, prettySymbols, kind) {
@@ -99,13 +99,13 @@ class LinearUnit(val multiplier: Rational, encoded: String, prettySymbols: Strin
             }
     }
 
-    override fun div(other: Unit): Unit {
+    override fun div(other: PhysUnit): PhysUnit {
         if (other == NO_UNIT) return this
 
         return toComposite() / other
     }
 
-    override fun times(other: Unit): Unit {
+    override fun times(other: PhysUnit): PhysUnit {
         if (this == NO_UNIT) return other
         if (other == NO_UNIT) return this
 
@@ -116,7 +116,7 @@ class LinearUnit(val multiplier: Rational, encoded: String, prettySymbols: Strin
         return asComposite
     }
 
-    override fun toPower(exp: Int): Unit {
+    override fun toPower(exp: Int): PhysUnit {
         if (exp == 1)
             return asComposite
 
@@ -211,9 +211,9 @@ private fun prettyPrintUnits(parts: Map<NamedUnit, Int>): String {
     return sb.toString()
 }
 
-class CompositeUnit(val parts: Map<NamedUnit, Int>, val multiplier: Rational, encoded: String, prettySymbols: String, kind: UnitKind) : Unit(encoded, prettySymbols, kind) {
+class CompositeUnit(val parts: Map<NamedUnit, Int>, val multiplier: Rational, encoded: String, prettySymbols: String, kind: UnitKind) : PhysUnit(encoded, prettySymbols, kind) {
 
-    override fun times(other: Unit): Unit {
+    override fun times(other: PhysUnit): PhysUnit {
         when (other) {
             is LinearUnit ->
                 return times(other.toComposite())
@@ -235,7 +235,7 @@ class CompositeUnit(val parts: Map<NamedUnit, Int>, val multiplier: Rational, en
         }
     }
 
-    override fun div(other: Unit): Unit {
+    override fun div(other: PhysUnit): PhysUnit {
         when (other) {
             is LinearUnit ->
                 return div(other.toComposite())
@@ -297,15 +297,15 @@ object DegCelsius : CustomUnit("degC", "°C", UnitKind.TEMPERATURE) {
         return asComposite
     }
 
-    override fun div(other: Unit): Unit {
+    override fun div(other: PhysUnit): PhysUnit {
         return toComposite() / other
     }
 
-    override fun times(other: Unit): Unit {
+    override fun times(other: PhysUnit): PhysUnit {
         return toComposite() * other
     }
 
-    override fun toPower(exp: Int): Unit {
+    override fun toPower(exp: Int): PhysUnit {
         if (exp == 1)
             return asComposite
 
@@ -337,15 +337,15 @@ object DegFahrenheit : CustomUnit("degF", "°F", UnitKind.TEMPERATURE) {
         return asComposite
     }
 
-    override fun div(other: Unit): Unit {
+    override fun div(other: PhysUnit): PhysUnit {
         return toComposite() / other
     }
 
-    override fun times(other: Unit): Unit {
+    override fun times(other: PhysUnit): PhysUnit {
         return toComposite() * other
     }
 
-    override fun toPower(exp: Int): Unit {
+    override fun toPower(exp: Int): PhysUnit {
         if (exp == 1)
             return asComposite
 

@@ -1,6 +1,6 @@
 package com.xs0.unitskt
 
-private fun chooseBigger(a: Unit, b: Unit): Unit {
+private fun chooseBigger(a: PhysUnit, b: PhysUnit): PhysUnit {
     return if (a.toComposite().multiplier > b.toComposite().multiplier) {
         a
     } else {
@@ -8,11 +8,11 @@ private fun chooseBigger(a: Unit, b: Unit): Unit {
     }
 }
 
-fun Double.of(unit: Unit) = Quantity(this, unit)
+fun Double.of(unit: PhysUnit) = Quantity(this, unit)
 
 
-class Quantity(val value: Double, val unit: Unit, val isInterval: Boolean = false) {
-    fun convertTo(newUnit: Unit): Quantity {
+class Quantity(val value: Double, val unit: PhysUnit, val isInterval: Boolean = false) {
+    fun convertTo(newUnit: PhysUnit): Quantity {
         if (unit == newUnit)
             return this
 
@@ -61,7 +61,7 @@ class Quantity(val value: Double, val unit: Unit, val isInterval: Boolean = fals
         // 37 °C - 9 °F = 49.78 °C (with 9 °F = -12.78 °C temperature)
         // (we choose the second one; to have the first one, you need to have an explicit interval)
 
-        val targetUnit: Unit
+        val targetUnit: PhysUnit
 
         if (unit is CustomUnit) {
             if (other.unit is CustomUnit) {
@@ -129,7 +129,7 @@ class Quantity(val value: Double, val unit: Unit, val isInterval: Boolean = fals
         if (unit == other.unit)
             return Quantity(value + other.value, unit, wantInterval)
 
-        val targetUnit: Unit
+        val targetUnit: PhysUnit
 
         if (isInterval && !other.isInterval) {
             targetUnit = other.unit
