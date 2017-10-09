@@ -1,7 +1,7 @@
 package com.xs0.unitskt
 
 // PhysUnit = just base interface
-//     NamedUnit = Unit which has its own (simple) symbol
+//     NamedUnit = PhysUnit which has its own (simple) symbol
 //         LinearUnit = NamedUnit which has a multiplier and some form of UnitKind (e.g. N = 1 * kg m s⁻²)
 //         CustomUnit = NamedUnit which is not linearly converted to base units (e.g. °C)
 //     CompositeUnit = multiplier + exponents of NamedUnits (e.g. m/s²)
@@ -48,7 +48,7 @@ sealed class PhysUnit(val encoded: String, val prettySymbols: String, val kind: 
         if (other === null)
             return false
 
-        if (other !is Unit)
+        if (other !is PhysUnit)
             return false
 
         return equals(other)
